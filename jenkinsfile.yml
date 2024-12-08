@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_REGISTRY = 'bcccontainerreistry.azurecr.io'
-        DOCKER_REPO = 'Taskmasterpro'
+        DOCKER_REPO = 'taskmasterpro'
         DOCKER_IMAGE_TAG = "${DOCKER_REGISTRY}/${DOCKER_REPO}:${BUILD_NUMBER}"
         ACR_URL = 'bcccontainerreistry.azurecr.io'
         ACR_CREDENTIALS_ID = 'Acr-ID'

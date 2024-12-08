@@ -25,20 +25,29 @@ pipeline {
                 sh 'docker build -t ${DOCKER_IMAGE_TAG} .'
             }
         }
-        stage('Test Docker Image') {
+        stage('Run Container and Check Status') {
             steps {
                 script {
-                    // Run tests against the Docker image
                     try {
+                        // Run the container in detached mode
                         sh """
-                        docker run --rm --name test-container ${DOCKER_IMAGE_TAG} sh -c "
-                            # Add your test commands here. Example:
-                            echo 'Running application tests...';
-                            curl -f http://localhost:8081/health || exit 1;
-                        "
+                        docker run -d --name test-container ${DOCKER_IMAGE_TAG}
+                        """
+                        
+                        // Wait for the container to initialize
+                        sh 'sleep 10' // Adjust the delay as needed for your application
+
+                        // Check container status
+                        sh """
+                        CONTAINER_STATUS=$(docker inspect -f '{{.State.Status}}' test-container)
+                        if [ "$CONTAINER_STATUS" != "running" ]; then
+                            echo "Container is not running: $CONTAINER_STATUS"
+                            exit 1
+                        fi
+                        echo "Container is running successfully."
                         """
                     } finally {
-                        // Clean up the container if something fails
+                        // Stop and remove the test container
                         sh "docker rm -f test-container || true"
                     }
                 }

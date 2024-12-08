@@ -30,25 +30,25 @@ pipeline {
                 script {
                     try {
                         // Run the container in detached mode
-                        sh """
+                        sh '''
                         docker run -d --name test-container ${DOCKER_IMAGE_TAG}
-                        """
+                        '''
                         
                         // Wait for the container to initialize
                         sh 'sleep 10' // Adjust the delay as needed for your application
 
                         // Check container status
-                        sh """
-                        CONTAINER_STATUS=$(docker inspect -f '{{.State.Status}}' test-container)
+                        sh '''
+                        CONTAINER_STATUS=$(docker inspect -f "{{.State.Status}}" test-container)
                         if [ "$CONTAINER_STATUS" != "running" ]; then
                             echo "Container is not running: $CONTAINER_STATUS"
                             exit 1
                         fi
                         echo "Container is running successfully."
-                        """
+                        '''
                     } finally {
                         // Stop and remove the test container
-                        sh "docker rm -f test-container || true"
+                        sh 'docker rm -f test-container || true'
                     }
                 }
             }

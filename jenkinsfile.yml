@@ -68,6 +68,13 @@ pipeline {
                 }
             }
         }
+        stage('Edit Deployment File') {
+            steps {
+                script {
+                    sh "sed -i 's|image: bcccontainerreistry.azurecr.io/taskmasterpro:.*|image: bcccontainerreistry.azurecr.io/taskmasterpro:${BUILD_NUMBER}|' deployment-service.yml"
+                }
+            }
+        }
         stage('Deploy to AKS'){
             steps{
                 sh 'kubectl apply -f deployment-service.yml'

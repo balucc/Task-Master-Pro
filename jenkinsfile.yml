@@ -68,6 +68,12 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to AKS'){
+            steps{
+                sh 'kubectl apply -f deployment-service.yml'
+                sh 'kubectl apply -f ingress.yml'
+            }
+        }
     }
     post {
         always {

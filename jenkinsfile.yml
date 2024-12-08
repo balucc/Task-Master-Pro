@@ -1,28 +1,29 @@
-pipeline{
+pipeline {
     agent any
-     environment {
+    environment {
         DOCKER_REGISTRY = 'bcccontainerreistry.azurecr.io'
         DOCKER_REPO = 'Taskmasterpro'
         DOCKER_IMAGE_TAG = "${DOCKER_REGISTRY}/${DOCKER_REPO}:${BUILD_NUMBER}"
         ACR_URL = 'bcccontainerreistry.azurecr.io'
         ACR_CREDENTIALS_ID = 'Acr-ID'
-     }
+    }
     stages {
-        stage('Git Checkout'){
-            steps{
+        stage('Git Checkout') {
+            steps {
                 git branch: 'main', credentialsId: 'gitcred', url: 'https://github.com/balucc/Task-Master-Pro.git'
             }
         }
-        stage('Compile'){
-            steps{
-                withMaven(maven:'maven'){
+        stage('Compile') {
+            steps {
+                withMaven(maven: 'maven') {
                     sh 'mvn clean install'
-                }                    
+                }
             }
         }
-        stage('Docker build'){
-            sh 'docker build -t ${DOCKER_IMAGE_TAG}.'
-
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t ${DOCKER_IMAGE_TAG} .'
+            }
         }
         stage('Test Docker Image') {
             steps {
@@ -33,7 +34,7 @@ pipeline{
                         docker run --rm --name test-container ${DOCKER_IMAGE_TAG} sh -c "
                             # Add your test commands here. Example:
                             echo 'Running application tests...';
-                            curl -f http://localhost:8080/health || exit 1;
+                            curl -f http://localhost:8081/health || exit 1;
                         "
                         """
                     } finally {
@@ -52,18 +53,17 @@ pipeline{
             steps {
                 script {
                     withDockerRegistry(credentialsId: "${ACR_CREDENTIALS_ID}", url: "https://${ACR_URL}") {
-
-                    // Push the Docker image to the registry
-                    sh "docker push ${DOCKER_IMAGE_TAG}"
+                        // Push the Docker image to the registry
+                        sh "docker push ${DOCKER_IMAGE_TAG}"
                     }
                 }
             }
         }
-        post {
-            always {
-            // Clean up dangling Docker images
-                sh "docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || true"
-            }
     }
-}
+    post {
+        always {
+            // Clean up dangling Docker images
+            sh "docker rmi ${DOCKER_IMAGE_TAG} || true"
+        }
+    }
 }
